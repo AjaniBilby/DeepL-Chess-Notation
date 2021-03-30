@@ -4,6 +4,7 @@
   "description": "An application to automatically generate chess notation from input images",
   "main": "server.js",
   "scripts": {
+    "postinstall": "pip install tensorflow",
     "train": "python training/main.py",
     "test": "node server.js"
   },
