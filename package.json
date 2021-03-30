@@ -1,0 +1,20 @@
+{
+  "name": "deepl-chess-notation-automation",
+  "version": "0.0.0",
+  "description": "An application to automatically generate chess notation from input images",
+  "main": "server.js",
+  "scripts": {
+    "train": "python training/main.py",
+    "test": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AjaniBilby/DeepL-Chess-Notation-Automation.git"
+  },
+  "author": "",
+  "license": "GNU General Public License v3.0",
+  "bugs": {
+    "url": "https://github.com/AjaniBilby/DeepL-Chess-Notation-Automation/issues"
+  },
+  "homepage": "https://github.com/AjaniBilby/DeepL-Chess-Notation-Automation#readme"
+}
