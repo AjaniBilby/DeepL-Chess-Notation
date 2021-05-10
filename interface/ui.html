@@ -1,0 +1,45 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style>
+			#canvas {
+				--size: min(90vw, 992px, 90vh);
+
+				width: var(--size);
+				height: var(--size);
+
+				margin: 5px auto;
+				display: block;
+			}
+
+			#fileInput {
+				margin: 10px auto;
+				display: block;
+			}
+
+			#results {
+				min-width: 100%;
+				width: 100%;
+				max-width: 100%;
+
+				min-height: 200px;
+
+				display: block;
+			}
+
+			#clear {
+				display: block;
+				margin: 10px auto;
+			}
+		</style>
+		<script src="./ui.js"></script>
+		<script src="./process.js"></script>
+	</head>
+	<body>
+		<canvas id="canvas" width="992" height="992"></canvas>
+		<input id="fileInput" type="file" accept="image/*;capture=camera">
+
+		<textarea id="results"></textarea>
+		<button id="clear">Clear History</button>
+	</body>
+</html>
