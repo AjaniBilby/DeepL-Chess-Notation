@@ -26,10 +26,12 @@ window.addEventListener('load', () => {
 			img.src = reader.result;
 			img.onload = () => {
 				ctx.drawImage(img,0,0, canvas.width, canvas.height);
-				Process();
+				Augment(canvas);
+				// Process(canvas);
 			};
 		};
 
+		console.log(33, fileInput.files[0]);
 		reader.readAsDataURL(fileInput.files[0]);
 	});
 
