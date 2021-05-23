@@ -57,20 +57,15 @@ async function GetManualAugmentPoints(canvas) {
 
 
 async function Augment(canvas) {
+	DisableUI(true);
 	let src = cv.imread(canvas, 0);
 
-	let points = await GetManualAugmentPoints(canvas);
-
-	// let bound = GetPointBounds(points);
-	// ctx.strokeStyle = "blue";
-	// ctx.rect(
-	// 	bound[0][0], bound[0][1],
-	// 	bound[1][0] - bound[0][0], bound[1][1] - bound[0][1]
-	// );
-	// ctx.stroke();
-	// console.log(64, bound);
-
-	console.log(73, points);
+	let points;
+	if (manual_augmentation) {
+		points = await GetManualAugmentPoints(canvas);
+	} else {
+		points = await GetAutoAugmentPoints(canvas);
+	}
 
 	let dst = new cv.Mat();
 	let dsize = new cv.Size(src.rows, src.cols);
@@ -80,17 +75,11 @@ async function Augment(canvas) {
 		points[2][0], points[2][1],
 		points[3][0], points[3][1],
 	]);
-	// let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-	// 	0,        0,         // A
-	// 	src.rows, 0,         // B
-	// 	0,        src.cols,  // C
-	// 	src.rows, src.cols   // D
-	// ]);
 	let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-		0,        0,         // A
-		src.rows, 0,         // B
-		0,        src.cols,  // C
-		src.rows, src.cols   // D
+		0,        0,
+		src.rows, 0,
+		0,        src.cols,
+		src.rows, src.cols
 	]);
 	let M = cv.getPerspectiveTransform(srcTri, dstTri);
 	cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
@@ -101,4 +90,5 @@ async function Augment(canvas) {
 	srcTri.delete();
 	dstTri.delete();
 
+	DisableUI(false);
 }

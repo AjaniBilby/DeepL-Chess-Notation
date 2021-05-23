@@ -14,6 +14,15 @@ let ctx;
 let results;
 let reader;
 let img;
+let manual_augmentation;
+
+
+function WaitTime(delay) {
+	return new Promise((res, rej) => {
+		setTimeout(res, delay)
+	});
+}
+
 
 window.addEventListener('load', () => {
 	// Prepare the file input bindings
@@ -35,6 +44,10 @@ window.addEventListener('load', () => {
 		reader.readAsDataURL(fileInput.files[0]);
 	});
 
+	document.getElementById("manual").addEventListener('click', (evt) => {
+		manual_augmentation = evt.target.checked;
+	});
+
 	// Get the results element
 	results = document.getElementById('results');
 
@@ -48,4 +61,15 @@ window.addEventListener('load', () => {
 	document.getElementById('clear').addEventListener('click', () => {
 		results.innerText = "";
 	});
+
+
+	// TEST
+	// console.log('DEBUG')
+	// img = new Image();
+	// img.src = "./sample-image.JPG";
+	// img.onload = () => {
+	// 	ctx.drawImage(img,0,0, canvas.width, canvas.height);
+	// 	// Augment(canvas);
+	// 	Process(canvas);
+	// };
 });
