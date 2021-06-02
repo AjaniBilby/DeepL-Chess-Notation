@@ -245,7 +245,7 @@ async function GetAutoAugmentPoints(canvas) {
 	await WaitTime(2000);
 
 	// Find the lines within the edges
-	console.info("Processing Hought Lines...");
+	console.info("Processing Hough Lines...");
 	let linesMat = Hough_Lines(edges);
 	Draw_Lines(linesMat, grey);
 	cv.imshow(canvas, grey);
