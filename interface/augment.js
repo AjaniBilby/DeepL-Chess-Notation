@@ -34,12 +34,13 @@ function GetPointBounds(points) {
 async function GetManualAugmentPoints(canvas) {
 	ctx.fillStyle = "red";
 
-	let adjustX = canvas.width / canvas.offsetWidth;
-	let adjustY = canvas.height / canvas.offsetHeight;
-
 	let points = [];
 	for (let i=0; i<4; i++) {
 		let evt = await OnClick(canvas);
+
+		let adjustX = canvas.width / canvas.offsetWidth;
+		let adjustY = canvas.height / canvas.offsetHeight;
+
 		let x = evt.layerX * adjustX;
 		let y = evt.layerY * adjustY;
 
@@ -56,19 +57,20 @@ async function GetManualAugmentPoints(canvas) {
 
 
 
-async function Augment(canvas) {
+async function Augment(canvas, img) {
 	DisableUI(true);
-	let src = cv.imread(canvas, 0);
+	let src = cv.imread(img, 0);
+	cv.imshow(canvas, src);
 
 	let points;
-	if (manual_augmentation) {
+	if (manual.checked) {
 		points = await GetManualAugmentPoints(canvas);
 	} else {
 		points = await GetAutoAugmentPoints(canvas);
 	}
 
-	let dst = new cv.Mat();
-	let dsize = new cv.Size(src.rows, src.cols);
+	let warp = new cv.Mat();
+	let dsize = new cv.Size(992, 992);
 	let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
 		points[0][0], points[0][1],
 		points[1][0], points[1][1],
@@ -76,19 +78,31 @@ async function Augment(canvas) {
 		points[3][0], points[3][1],
 	]);
 	let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-		0,        0,
-		src.rows, 0,
-		0,        src.cols,
-		src.rows, src.cols
+		0,     0,
+		992, 0,
+		0,   992,
+		992, 992
 	]);
 	let M = cv.getPerspectiveTransform(srcTri, dstTri);
-	cv.warpPerspective(src, dst, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
-	cv.imshow(canvas, dst);
+	cv.warpPerspective(src, warp, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+
+	let crop = new cv.Mat();
+	crop = warp.roi(new cv.Rect(
+		0,0,
+		992, 992
+	));
+
+	cv.imshow(canvas, crop);
+
+	// manual memory management of openCV instance
 	src.delete();
-	dst.delete();
+	warp.delete();
+	// crop.delete(); don't delete dst, as it's returned
 	M.delete();
 	srcTri.delete();
 	dstTri.delete();
 
 	DisableUI(false);
+
+	return crop;
 }

@@ -5,6 +5,9 @@ let opts = [
 	"rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R"
 ];
 
+
+let model = null;
+
 function Canny_Edge(grey) {
 	let dst = new cv.Mat();
 	cv.Canny(grey, dst, 50, 100, 3, false);
@@ -246,7 +249,6 @@ async function GetAutoAugmentPoints(canvas) {
 	let linesMat = Hough_Lines(edges);
 	Draw_Lines(linesMat, grey);
 	cv.imshow(canvas, grey);
-	console.log("  lines:", linesMat);
 	await WaitTime(2000);
 
 	// Find the intersection of lines
@@ -277,4 +279,118 @@ async function GetAutoAugmentPoints(canvas) {
 	linesMat.delete();
 
 	return handles;
+}
+
+
+
+
+
+
+const CLASSES = {
+	0: "b",
+	1: "k",
+	2: "n",
+	3: "p",
+	4: "q",
+	5: "r",
+	6: ".",
+	7: "B",
+	8: "K",
+	9: "N",
+	10: "P",
+	11: "Q",
+	12: "R"
+}
+
+async function LoadNetwork() {
+	model = await tf.loadLayersModel("./data/model.json");
+	return;
+}
+
+function FixFen(str) {
+	return str
+		.replace(/\.\.\.\.\.\.\.\./g, "8")
+		.replace(/\.\.\.\.\.\.\./g, "7")
+		.replace(/\.\.\.\.\.\./g, "6")
+		.replace(/\.\.\.\.\./g, "5")
+		.replace(/\.\.\.\./g, "4")
+		.replace(/\.\.\./g, "3")
+		.replace(/\.\./g, "2")
+		.replace(/\./g, "1")
+}
+
+async function Process (board) {
+	let str = "";
+
+	console.log(313, board);
+
+	let minConf = 1;
+	let maxConf = 0;
+	let avgConf = 0;
+
+	let input = new cv.Mat();
+	for (let y=0; y<8; y++) {
+		if (y != 0) { str += "/"; }
+
+		for (let x=0; x<8; x++) {
+			let dsize = new cv.Size(124, 124);
+			let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+				(x+0)*124, (y+0)*124,
+				(x+1)*124, (y+0)*124,
+				(x+0)*124, (y+1)*124,
+				(x+1)*124, (y+1)*124,
+			]);
+			let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+				-3,  -3,
+				127, -3,
+				-3,  127,
+				127, 127
+			]);
+			let M = cv.getPerspectiveTransform(srcTri, dstTri);
+			let warp = new cv.Mat();
+			cv.warpPerspective(board, warp, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
+
+			let res = model.predict(
+				tf.tensor4d(
+					[...warp.data.filter((x, i) => i % 4 != 3)] // remove alpha
+						.map(x => x/255),
+					[1, 124, 124, 3]
+				)
+			)
+
+			let prob = await res.data();
+
+			let bestI = 0;
+			let confidence = prob[0];
+			for (let i=1; i<prob.length; i++) {
+				if (prob[i] > confidence) {
+					bestI = i;
+					confidence = prob[i];
+				}
+			}
+
+			minConf = Math.min(minConf, confidence);
+			maxConf = Math.max(maxConf, confidence);
+			avgConf += confidence;
+
+			str += CLASSES[bestI];
+
+			console.info(`${x},${y}`, CLASSES[bestI], `${(confidence*100).toFixed(2)}%`);
+
+			// cv.imshow(canvas, warp);
+			// await WaitTime(500);
+		}
+	}
+
+	minConf *= 100;
+	maxConf *= 100;
+	avgConf *= 100 / (8*8);
+
+	cv.imshow(canvas, board);
+
+	str = `${FixFen(str)}\n  ${minConf.toFixed(2)}-${maxConf.toFixed(2)}% (${avgConf.toFixed(2)}%)\n`;
+
+	results.value += str;
+	input.delete();
+	board.delete();
 }

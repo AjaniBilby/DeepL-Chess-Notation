@@ -3,7 +3,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<style>
 			#canvas {
-				--size: min(90vw, 992px, 90vh);
+				--size: min(90vw, 992px, 67vh);
 
 				width: var(--size);
 				height: var(--size);
@@ -18,11 +18,13 @@
 			}
 
 			#results {
-				min-width: 100%;
+				min-width: 300px;
 				width: 100%;
-				max-width: 100%;
+				max-width: 900px;
 
 				min-height: 200px;
+
+				margin: 0px auto;
 
 				display: block;
 			}
@@ -32,17 +34,18 @@
 				margin: 10px auto;
 			}
 		</style>
-		<script src="./augment.js"></script>
 		<script src="./ui.js"></script>
-		<script src="./process.js"></script>
-		<script async src="./opencv.js" type="text/javascript"></script>
+		<script async src="./augment.js"></script>
+		<script async src="./process.js"></script>
+		<script async src="https://docs.opencv.org/3.4.0/opencv.js" type="text/javascript"></script>
+		<script async src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.5.0/dist/tf.min.js" type="text/javascript"></script>
 	</head>
 	<body>
 		<canvas id="canvas" width="992" height="992"></canvas>
-		<input id="fileInput" type="file" accept="image/*;capture=camera">
-		<div style="display: block; text-align: center; margin: 5px auto"><label>Manually Align</label><input id="manual" type="checkbox"></div>
+		<input id="fileInput" type="file" accept="image/*;capture=camera" disabled>
+		<div style="display: block; text-align: center; margin: 5px auto"><label>Manually Align</label><input id="manual" type="checkbox" checked disabled></div>
 
-		<textarea id="results"></textarea>
-		<button id="clear">Clear History</button>
+		<textarea id="results" disabled></textarea>
+		<button id="clear" disabled>Clear History</button>
 	</body>
 </html>
