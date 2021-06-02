@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/AjaniBilby/DeepL-Chess-Notation-Automation/issues"
   },
-  "homepage": "https://github.com/AjaniBilby/DeepL-Chess-Notation-Automation#readme"
+  "homepage": "https://github.com/AjaniBilby/DeepL-Chess-Notation-Automation#readme",
+  "dependencies": {
+    "mathjs": "^9.4.0"
+  }
 }

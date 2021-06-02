@@ -9,6 +9,8 @@ let serv = http.createServer((req, res) => {
 		req.url = "/index.html";
 	}
 
+	console.log(12, req.url);
+
 	let file = path.join(__dirname, req.url);
 
 	if (fs.existsSync(file)) {
@@ -16,7 +18,7 @@ let serv = http.createServer((req, res) => {
 
 		let stream = fs.createReadStream(file);
 		stream.pipe(res);
-		stream.on('end', res.end);
+		// stream.on('end', res.end);
 	} else {
 		res.statusCode = 400;
 		res.end(`404 cannot find: ${req.url}`);
