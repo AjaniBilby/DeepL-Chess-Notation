@@ -303,7 +303,7 @@ const CLASSES = {
 }
 
 async function LoadNetwork() {
-	model = await tf.loadLayersModel("./data/model.json");
+	model = await tf.loadLayersModel("./data/v2/model.json");
 	return;
 }
 
@@ -324,6 +324,9 @@ async function Process (board) {
 
 	console.log(313, board);
 
+	board.convertTo(board, cv.CV_8UC1, 1.05, 10);
+	cv.imshow(canvas, board);
+
 	let minConf = 1;
 	let maxConf = 0;
 	let avgConf = 0;
@@ -333,18 +336,19 @@ async function Process (board) {
 		if (y != 0) { str += "/"; }
 
 		for (let x=0; x<8; x++) {
-			let dsize = new cv.Size(124, 124);
+			let dsize = new cv.Size(128, 128);
 			let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-				(x+0)*124, (y+0)*124,
-				(x+1)*124, (y+0)*124,
-				(x+0)*124, (y+1)*124,
-				(x+1)*124, (y+1)*124,
+				(x+0)*128, (y+0)*128,
+				(x+1)*128, (y+0)*128,
+				(x+0)*128, (y+1)*128,
+				(x+1)*128, (y+1)*128,
+				
 			]);
 			let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-				-3,  -3,
-				127, -3,
-				-3,  127,
-				127, 127
+				0,     0,
+				128,   0,
+				0,   128,
+				128, 128
 			]);
 			let M = cv.getPerspectiveTransform(srcTri, dstTri);
 			let warp = new cv.Mat();
@@ -354,7 +358,7 @@ async function Process (board) {
 				tf.tensor4d(
 					[...warp.data.filter((x, i) => i % 4 != 3)] // remove alpha
 						.map(x => x/255),
-					[1, 124, 124, 3]
+					[1, 128, 128, 3]
 				)
 			)
 
@@ -373,20 +377,20 @@ async function Process (board) {
 			maxConf = Math.max(maxConf, confidence);
 			avgConf += confidence;
 
-			str += CLASSES[bestI];
+			let type = confidence < 0.50 ? "?" : CLASSES[bestI];
+			str += type;
 
-			console.info(`${x},${y}`, CLASSES[bestI], `${(confidence*100).toFixed(2)}%`);
+			console.info(`${x},${y}`, type, `${(confidence*100).toFixed(2)}%`, prob.map(x => (x*100).toFixed()).join(","));
 
 			// cv.imshow(canvas, warp);
 			// await WaitTime(500);
 		}
+		console.info("");
 	}
 
 	minConf *= 100;
 	maxConf *= 100;
 	avgConf *= 100 / (8*8);
-
-	cv.imshow(canvas, board);
 
 	str = `${FixFen(str)}\n  ${minConf.toFixed(2)}-${maxConf.toFixed(2)}% (${avgConf.toFixed(2)}%)\n`;
 

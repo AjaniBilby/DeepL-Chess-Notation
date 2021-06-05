@@ -63,33 +63,45 @@ async function Augment(canvas, img) {
 	cv.imshow(canvas, src);
 
 	let points;
-	if (manual.checked) {
-		points = await GetManualAugmentPoints(canvas);
-	} else {
+	let auto = !manual.checked;
+	if (auto) {
 		points = await GetAutoAugmentPoints(canvas);
+	} else {
+		points = await GetManualAugmentPoints(canvas);
 	}
 
 	let warp = new cv.Mat();
-	let dsize = new cv.Size(992, 992);
+	let dsize = new cv.Size(1024, 1024);
 	let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
 		points[0][0], points[0][1],
 		points[1][0], points[1][1],
 		points[2][0], points[2][1],
 		points[3][0], points[3][1],
 	]);
-	let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-		0,     0,
-		992, 0,
-		0,   992,
-		992, 992
-	]);
+	let dstTri;
+	if (auto) {
+		const inset = 20;
+		dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+			0+inset,    0+inset,
+			1024+inset, 0-inset,
+			0+inset,    1024-inset,
+			1024-inset, 1024-inset
+		]);
+	} else {
+		dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+			0,     0,
+			1024, 0,
+			0,   1024,
+			1024, 1024
+		]);
+	}
 	let M = cv.getPerspectiveTransform(srcTri, dstTri);
 	cv.warpPerspective(src, warp, M, dsize, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
 
 	let crop = new cv.Mat();
 	crop = warp.roi(new cv.Rect(
 		0,0,
-		992, 992
+		1024, 1024
 	));
 
 	cv.imshow(canvas, crop);
