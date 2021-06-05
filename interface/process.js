@@ -303,7 +303,7 @@ const CLASSES = {
 }
 
 async function LoadNetwork() {
-	model = await tf.loadLayersModel("./data/v2/model.json");
+	model = await tf.loadLayersModel("./data/AlexNet-v2/model.json");
 	return;
 }
 
